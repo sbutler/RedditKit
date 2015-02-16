@@ -39,6 +39,8 @@ static NSString * const kOAuthScopeVote = @"vote";
 @property (nonatomic, strong) NSString *accessToken;
 @property (nonatomic, strong) NSString *refreshToken;
 
+@property (nonatomic, strong) RKCompletionBlock backgroundRefreshCompletion;
+
 /**
  Returns a RKClient ready for OAuth
  Get a client ID and secret here: https://ssl.reddit.com/prefs/apps

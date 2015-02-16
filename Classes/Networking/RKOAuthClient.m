@@ -105,7 +105,13 @@ static const NSString *kGrantTypeInstalledClient = @"https://oauth.reddit.com/gr
 - (NSURLSessionDataTask *)refreshAccessTokenWithTimer:(NSTimer *)timer
 {
     NSDictionary *parameters = timer.userInfo;
-    return [self refreshAccessToken:_refreshToken redirectURI:parameters[@"redirect_uri"] state:parameters[@"state"] completion:nil];
+    BOOL forApplication = (parameters[@"grant_type"] && ([parameters[@"grant_type"] isEqual:kGrantTypeClientCredentials] || [parameters[@"grant_type"] isEqual:kGrantTypeInstalledClient]));
+
+    if (forApplication) {
+        return [self accessTokensWithParams:parameters completion:_backgroundRefreshCompletion];
+    } else {
+        return [self refreshAccessToken:_refreshToken redirectURI:parameters[@"redirect_uri"] state:parameters[@"state"] completion:_backgroundRefreshCompletion];
+    }
 }
 
 - (NSURLSessionDataTask *)refreshAccessToken:(NSString *)refreshToken redirectURI:(NSString *)redirectURI state:(NSString *)state completion:(RKCompletionBlock)completion
