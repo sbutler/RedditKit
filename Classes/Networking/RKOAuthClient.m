@@ -90,7 +90,7 @@ static const NSString *kGrantTypeInstalledClient = @"https://oauth.reddit.com/gr
     return [self accessTokensWithParams:parameters completion:completion];
 }
 
-- (NSURLSessionDataTask *)signInWithApplication:(NSString *)deviceId completion:(RKCompletionBlock)completion
+- (NSURLSessionDataTask *)signInWithDeviceId:(NSString *)deviceId completion:(RKCompletionBlock)completion
 {
     NSParameterAssert(deviceId);
     

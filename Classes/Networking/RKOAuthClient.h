@@ -50,7 +50,7 @@ static NSString * const kOAuthScopeVote = @"vote";
  */
 - (NSURL *)oauthURLWithRedirectURI:(NSString *)redirectURI state:(NSString *)state scope:(NSArray*)scope;
 - (NSURLSessionDataTask *)signInWithAccessCode:(NSString *)accessCode redirectURI:(NSString *)redirectURI state:(NSString *)state completion:(RKCompletionBlock)completion;
-- (NSURLSessionDataTask *)signInWithApplication:(NSString *)deviceId completion:(RKCompletionBlock)completion;
+- (NSURLSessionDataTask *)signInWithDeviceId:(NSString *)deviceId completion:(RKCompletionBlock)completion;
 - (NSURLSessionDataTask *)refreshAccessToken:(NSString*)refreshToken redirectURI:(NSString *)redirectURI state:(NSString *)state completion:(RKCompletionBlock)completion;
 
 @end
