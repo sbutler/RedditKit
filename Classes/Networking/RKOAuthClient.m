@@ -13,6 +13,9 @@
 
 #import "RKClient+Users.h"
 
+static const NSString *kGrantTypeClientCredentials = @"client_credentials";
+static const NSString *kGrantTypeInstalledClient = @"https://oauth.reddit.com/grants/installed_client";
+
 @interface RKOAuthClient ()
 
 @property (nonatomic, strong) RKUser *currentUser;
@@ -87,6 +90,17 @@
     return [self accessTokensWithParams:parameters completion:completion];
 }
 
+- (NSURLSessionDataTask *)signInWithApplication:(NSString *)deviceId completion:(RKCompletionBlock)completion
+{
+    NSParameterAssert(deviceId);
+    
+    NSDictionary *parameters = @{
+                                 @"grant_type": (_clientSecret && ![_clientSecret isEqual:@""] ? kGrantTypeClientCredentials : kGrantTypeInstalledClient),
+                                 @"device_id": deviceId
+                                 };
+    return [self accessTokensWithParams:parameters completion:completion];
+}
+
 - (NSURLSessionDataTask *)refreshAccessTokenWithTimer:(NSTimer *)timer
 {
     NSDictionary *parameters = timer.userInfo;
@@ -127,6 +141,7 @@
     [self setOAuthorizationHeader];
     NSURL *baseURL = [[self class] APIBaseLoginURL];
     NSString *URLString = [[NSURL URLWithString:@"api/v1/access_token" relativeToURL:baseURL] absoluteString];
+    BOOL forApplication = (parameters[@"grant_type"] && ([parameters[@"grant_type"] isEqual:kGrantTypeClientCredentials] || [parameters[@"grant_type"] isEqual:kGrantTypeInstalledClient]));
     
     NSMutableURLRequest *request = [[self requestSerializer] requestWithMethod:@"POST" URLString:URLString parameters:parameters error:nil];
     
@@ -150,7 +165,7 @@
                 _tokenRefreshTimer = [NSTimer scheduledTimerWithTimeInterval:seconds target:self selector:@selector(refreshAccessTokenWithTimer:) userInfo:parameters repeats:NO];
             }
             [self setBearerAccessToken:_accessToken];
-            if (!self.currentUser) {
+            if (!self.currentUser && !forApplication) {
                 [weakSelf loadUserAccountWithCallback:^(NSError *error) {
                     if (completion) {
                         completion(error);
