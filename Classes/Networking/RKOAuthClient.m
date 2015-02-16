@@ -19,6 +19,7 @@ static const NSString *kGrantTypeInstalledClient = @"https://oauth.reddit.com/gr
 @interface RKOAuthClient ()
 
 @property (nonatomic, strong) RKUser *currentUser;
+@property (nonatomic, strong) NSDate *accessTokenExpires;
 @property (nonatomic, strong) NSTimer *tokenRefreshTimer;
 
 @end
@@ -155,15 +156,20 @@ static const NSString *kGrantTypeInstalledClient = @"https://oauth.reddit.com/gr
             } else {
                 _refreshToken = parameters[@"refresh_token"];
             }
+
             //if our token expires, we should refresh it
             if (responseObject[@"expires_in"]) {
                 //if we have an existing timer, invalidate it so it doesn't fire twice
                 if (_tokenRefreshTimer) {
                     [_tokenRefreshTimer invalidate];
                 }
-                int seconds = [responseObject[@"expires_in"] intValue] - 10; //be a little aggressive and refresh 10 seconds before our token expires
-                _tokenRefreshTimer = [NSTimer scheduledTimerWithTimeInterval:seconds target:self selector:@selector(refreshAccessTokenWithTimer:) userInfo:parameters repeats:NO];
+                //be a little aggressive and refresh 10 seconds before our token expires
+                _accessTokenExpires = [NSDate dateWithTimeIntervalSinceNow:[responseObject[@"expires_in"] intValue]];
+                _tokenRefreshTimer = [NSTimer scheduledTimerWithTimeInterval:(_accessTokenExpires.timeIntervalSinceNow - 10) target:self selector:@selector(refreshAccessTokenWithTimer:) userInfo:parameters repeats:NO];
+            } else {
+                _accessTokenExpires = nil;
             }
+
             [self setBearerAccessToken:_accessToken];
             if (!self.currentUser && !forApplication) {
                 [weakSelf loadUserAccountWithCallback:^(NSError *error) {
@@ -213,6 +219,10 @@ static const NSString *kGrantTypeInstalledClient = @"https://oauth.reddit.com/gr
 	return self.modhash != nil || _accessToken != nil;
 }
 
+- (BOOL)needsRefresh
+{
+    return _accessTokenExpires.timeIntervalSinceNow <= 0;
+}
 
 - (void)setBearerAccessToken:(NSString*)accessToken
 {

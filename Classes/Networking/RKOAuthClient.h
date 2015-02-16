@@ -53,4 +53,6 @@ static NSString * const kOAuthScopeVote = @"vote";
 - (NSURLSessionDataTask *)signInWithDeviceId:(NSString *)deviceId completion:(RKCompletionBlock)completion;
 - (NSURLSessionDataTask *)refreshAccessToken:(NSString*)refreshToken redirectURI:(NSString *)redirectURI state:(NSString *)state completion:(RKCompletionBlock)completion;
 
+- (BOOL) needsRefresh;
+
 @end
