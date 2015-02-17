@@ -121,6 +121,10 @@
         {
             return nil;
         }
+        else if ([thumbnailURL isEqualToString:@"nsfw"])
+        {
+            return nil;
+        }
         else
         {
             return [NSURL URLWithString:thumbnailURL];
